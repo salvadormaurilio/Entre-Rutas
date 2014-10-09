@@ -19,9 +19,9 @@ public class ObtainRoutesfromJson {
 
 
     public void loadEstaciones() throws FileNotFoundException {
-        BufferedReader bufferedReader = new BufferedReader(new FileReader("estaciones,json"));
+        BufferedReader bufferedReader = new BufferedReader(new FileReader("estaciones.json"));
         Gson gson = new Gson();
-        this.estacionModels = gson.fromJson(bufferedReader, new TypeToken<EstacionModel>() {
+        this.estacionModels = gson.fromJson(bufferedReader, new TypeToken<List<EstacionModel>>() {
         }.getType());
     }
 
@@ -51,7 +51,7 @@ public class ObtainRoutesfromJson {
             for (EstacionDestinosModel estacionDestinosModel : estacionDestinosModelList) {
                 route = caculeRoute(i, estacionDestinosModel.getDestino() - 1, estacionDestinosModel.getRutasDeDestino().get(0) - 1);
 
-                System.out.println("Estación Destino: " + estacionDestinosModel.getDestino() + " , " + estacionModels.get(estacionDestinosModel.getDestino()).getNombre());
+                System.out.println("Estación Destino: " + (estacionDestinosModel.getDestino()-1) + " , " + estacionModels.get(estacionDestinosModel.getDestino()-1).getNombre());
                 System.out.println("Ruta Obtenida: " + route.toString());
             }
 
@@ -96,6 +96,8 @@ public class ObtainRoutesfromJson {
             }
         }
 
+        System.out.println(pointStart+","+pointEnd);
+
         if (pointStart < pointEnd) {
 
             if (pointEnd - pointStart < ruta.size() - 2 - pointEnd + pointStart) {
@@ -126,10 +128,10 @@ public class ObtainRoutesfromJson {
     private List<Double> reverseList(List<Double> list) {
         List<Double> newList = new ArrayList<Double>();
 
-        for (int i = list.size() - 1; i > list.size(); i -= 2) {
+        for (int i = list.size() - 1; i > 0; i -= 2) {
 
             newList.add(list.get(i - 1));
-            newList.add(list.get(1));
+            newList.add(list.get(i));
         }
 
         return newList;
