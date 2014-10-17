@@ -62,7 +62,7 @@ public class ObtainRoutesfromJson {
 
     public List<Double> caculeRoute(int start, int end, int route) {
 
-        List<Double> routecalculete = new ArrayList<Double>();
+        List<Double> routeCalculete = new ArrayList<Double>();
         List<Double> ruta = rutas.get(route).getPoints();
 
         int pointStart = 0;
@@ -74,11 +74,11 @@ public class ObtainRoutesfromJson {
         double longitudeEnd = estacionModels.get(end).getLongitude();
 
         double distanceStart = calculeDistance(latitudeStart, longitudeStart, ruta.get(0), ruta.get(1));
-        double distanceEnd = calculeDistance(latitudeEnd, longitudeEnd, estacionModels.get(0).getLatitude(), estacionModels.get(0).getLongitude());
+        double distanceEnd = calculeDistance(latitudeEnd, longitudeEnd, ruta.get(0), ruta.get(1));
 
         double distance;
 
-        List<Double> endObained;
+        List<Double> auxList;
 
         for (int i = 0; i < ruta.size(); i += 2) {
 
@@ -103,23 +103,54 @@ public class ObtainRoutesfromJson {
         if (pointStart < pointEnd) {
 
             if (pointEnd - pointStart < ruta.size() - 2 - pointEnd + pointStart) {
-                routecalculete = ruta.subList(pointStart, pointEnd + 2);
+                routeCalculete = ruta.subList(pointStart, pointEnd + 2);
             } else {
-                routecalculete.addAll(reverseList(ruta.subList(pointEnd, ruta.size())));
-                routecalculete.addAll(reverseList(ruta.subList(0, pointStart + 2)));
+                routeCalculete.addAll(reverseList(ruta.subList(pointEnd, ruta.size())));
+                routeCalculete.addAll(reverseList(ruta.subList(0, pointStart + 2)));
+                int aux = pointStart;
+                pointStart = pointEnd;
+                pointEnd = aux;
             }
         } else {
             if (pointStart - pointEnd < ruta.size() - 2 - pointStart + pointEnd) {
-                routecalculete = reverseList(ruta.subList(pointEnd, pointStart + 2));
+                routeCalculete = reverseList(ruta.subList(pointEnd, pointStart + 2));
+                int aux = pointStart;
+                pointStart = pointEnd;
+                pointEnd = aux;
             } else {
-                routecalculete.addAll(ruta.subList(pointStart, ruta.size()));
-                routecalculete.addAll(ruta.subList(0, pointEnd + 2));
+                routeCalculete.addAll(ruta.subList(pointStart, ruta.size()));
+                routeCalculete.addAll(ruta.subList(0, pointEnd + 2));
             }
 
         }
 
 
-        return routecalculete;
+
+        auxList = nearPoint(latitudeStart, longitudeStart, pointStart, route);
+
+        if (calculateAngle(routeCalculete.get(0), routeCalculete.get(1),
+                routeCalculete.get(2), routeCalculete.get(3), auxList.get(0), auxList.get(1))) {
+
+            routeCalculete.remove(0);
+            routeCalculete.remove(0);
+        }
+
+        routeCalculete.addAll(0, auxList);
+//
+//
+//        auxList = nearPoint(latitudeEnd, longitudeEnd, pointEnd, route);
+//
+//        if (!calculateAngle(routeCalculete.get(routeCalculete.size() - 2), routeCalculete.get(routeCalculete.size() - 1),
+//                routeCalculete.get(routeCalculete.size() - 4), routeCalculete.get(routeCalculete.size() - 3), auxList.get(0), auxList.get(1))) {
+//
+//            routeCalculete.remove(routeCalculete.size() - 1);
+//            routeCalculete.remove(routeCalculete.size() - 1);
+//        }
+//
+//        routeCalculete.addAll(routeCalculete.size(), auxList);
+
+
+        return routeCalculete;
     }
 
     private double calculeDistance(double latitudeStart, double longitudeStart, double latitudeEnd, double longitudeEnd) {
@@ -140,20 +171,48 @@ public class ObtainRoutesfromJson {
     }
 
 
-    public int nearPoint(double latitude, double longitude, int route) {
+    public List<Double> nearPoint(double latitudeStart, double longitudeStart, int point, int route) {
 
-        return 0;
+        int pointNext;
+
+        List<Double> pointObtained;
+        List<Double> arrayRoute = rutas.get(route).getPoints();
+
+        if (point == arrayRoute.size() - 2) {
+            point = 0;
+        }
+
+        pointNext = point + 2;
+
+
+        if (!calculateAngle(arrayRoute.get(point), arrayRoute.get(point + 1), latitudeStart, longitudeStart, arrayRoute.get(pointNext), arrayRoute.get(pointNext + 1))) {
+
+            if (point == 0) {
+                point = arrayRoute.size() - 2;
+            }
+            pointNext = point - 2;
+
+        }
+
+        pointObtained = pointInter(arrayRoute.get(point + 1), arrayRoute.get(pointNext + 1),
+                arrayRoute.get(point), arrayRoute.get(pointNext), longitudeStart, latitudeStart);
+
+
+        return pointObtained;
     }
 
 
-    public boolean calculateAngle(double latitudeStart, double longitudeStart, int point, int route) {
+    public boolean calculateAngle(double latitudeInit, double longitudeInit, double latitudeStart, double longitudeStart, double latitudeEnd, double longitudeEnd) {
 
-        double latitudeEnd = rutas.get(route).getPoints().get(point);
-        double longitudeEnd = rutas.get(route).getPoints().get(point + 1);
-        double numerartor = latitudeStart * latitudeEnd + longitudeStart * longitudeEnd;
+        double latitudeStartNew = latitudeStart - latitudeInit;
+        double longitudeStartNew = longitudeStart - longitudeInit;
+        double latitudeEndNew = latitudeEnd - latitudeInit;
+        double longitudeEndNew = longitudeEnd - longitudeInit;
 
-        double latitudeSqrt = Math.sqrt(latitudeStart * latitudeStart + latitudeEnd * latitudeEnd);
-        double longitudeSqrt = Math.sqrt(longitudeStart * longitudeStart + longitudeEnd * longitudeEnd);
+        double numerartor = latitudeStartNew * latitudeEndNew + longitudeStartNew * longitudeEndNew;
+
+        double latitudeSqrt = Math.sqrt(latitudeStartNew * latitudeStartNew + latitudeEndNew * latitudeEndNew);
+        double longitudeSqrt = Math.sqrt(longitudeStartNew * longitudeStartNew + longitudeEndNew * longitudeEndNew);
         double denominator = latitudeSqrt * longitudeSqrt;
 
         double angle = Math.toDegrees(Math.acos(numerartor / denominator));
@@ -162,7 +221,7 @@ public class ObtainRoutesfromJson {
     }
 
 
-    public static List<Double> pointInter(double xA1, double xA2, double yA1, double yA2, double xB1, double yB1) {
+    public List<Double> pointInter(double longitudeA1, double longitudeA2, double latitudeA1, double latitudeA2, double longitudeB1, double latitudeB1) {
 
         List<Double> pointObt = new ArrayList<Double>();
         double mA;
@@ -171,17 +230,17 @@ public class ObtainRoutesfromJson {
 
 
         try {
-            mA = (yA2 - yA1) / (xA2 - xA1);
+            mA = (latitudeA2 - latitudeA1) / (longitudeA2 - longitudeA1);
         } catch (ArithmeticException e) {
-            y = yB1;
-            x = xA1;
+            y = latitudeB1;
+            x = longitudeA1;
             pointObt.add(y);
             pointObt.add(x);
             return pointObt;
         }
         if (mA == 0) {
-            y = yA1;
-            x = xB1;
+            y = latitudeA1;
+            x = longitudeB1;
             pointObt.add(y);
             pointObt.add(x);
             return pointObt;
@@ -191,11 +250,11 @@ public class ObtainRoutesfromJson {
         double mA2 = mA * mA;
 
 
-        double yNumerator = yB1 * mA2 + (xB1 - xA1) * mA + yA1;
+        double yNumerator = latitudeB1 * mA2 + (longitudeB1 - longitudeA1) * mA + latitudeA1;
         double yDenominator = mA2 + 1;
         y = yNumerator / yDenominator;
 
-        x = ((y - yA1) / mA) - xA1;
+        x = ((y - latitudeA1) / mA) - longitudeA1;
 
         pointObt.add(y);
         pointObt.add(x);
