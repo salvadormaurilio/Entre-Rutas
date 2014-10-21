@@ -21,6 +21,8 @@ public class EstacionModel {
     private List<EstacionDestinosModel> destinos;
 
 
+
+
     public EstacionModel(String nombre, double latitude, double longitude, List<Integer> rutas, List<EstacionDestinosModel> destinos) {
         this.nombre = nombre;
         this.latitude = latitude;

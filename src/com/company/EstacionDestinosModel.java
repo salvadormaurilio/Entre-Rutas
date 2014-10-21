@@ -15,13 +15,14 @@ public class EstacionDestinosModel {
     private double distancia;
     @SerializedName("rutDes")
     private List<Integer> rutasDeDestino;
-//    private List<Double> puntosIntermedios;
+    @SerializedName("ruta")
+    private List<Double> ruta;
 
-    public EstacionDestinosModel(int destino, double distancia, List<Integer> rutasDeDestino) {
+    public EstacionDestinosModel(int destino, double distancia, List<Integer> rutasDeDestino, List<Double> ruta) {
         this.destino = destino;
         this.distancia = distancia;
         this.rutasDeDestino = rutasDeDestino;
-//        this.puntosIntermedios = puntosIntermedios;
+        this.ruta = ruta;
     }
 
     public int getDestino() {
@@ -36,7 +37,12 @@ public class EstacionDestinosModel {
         return rutasDeDestino;
     }
 
-//    public List<Double> getPuntosIntermedios() {
-//        return puntosIntermedios;
-//    }
+    public List<Double> getRuta() {
+        return ruta;
+    }
+
+    public void setRuta(List<Double> ruta) {
+
+        this.ruta = ruta;
+    }
 }
